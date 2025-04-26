@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["vectordb_bench", "vectordb_bench.cli"]
+include = ["vectordb_bench*", "vectordb_bench.cli"]
 
 [project]
 name = "vectordb-bench"
@@ -72,6 +72,8 @@ all = [
     "PyMySQL",
     "clickhouse-connect",
     "pyvespa",
+    "clickzetta-connector-python",
+    "clickzetta-zettapark-python",
 ]
 
 qdrant          = [ "qdrant-client" ]
@@ -94,6 +96,7 @@ mariadb         = [ "mariadb" ]
 tidb            = [ "PyMySQL" ]
 clickhouse      = [ "clickhouse-connect" ]
 vespa           = [ "pyvespa" ]
+clickzettalakehouse       = [ "clickzetta-connector-python", "clickzetta-zettapark-python" ]
 
 [project.urls]
 "repository" = "https://github.com/zilliztech/VectorDBBench"

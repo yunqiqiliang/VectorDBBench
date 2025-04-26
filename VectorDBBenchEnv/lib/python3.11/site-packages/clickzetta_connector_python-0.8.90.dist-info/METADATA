@@ -1,0 +1,36 @@
+Metadata-Version: 2.4
+Name: clickzetta-connector-python
+Version: 0.8.90
+Summary: clickzetta python connector
+Author-email: "wei.liu" <wei.liu@clickzetta.com>, "guantao.gao" <guantao.gao@clickzetta.com>, "lin.zhang" <lin.zhang@clickzetta.com>
+Project-URL: documentation, https://www.yunqi.tech/
+Platform: Posix
+Platform: MacOS X
+Classifier: Development Status :: 3 - Alpha
+Requires-Python: >=3.7
+License-File: LICENSE
+Requires-Dist: packaging<24.0.0dev,>=14.3
+Requires-Dist: python-dateutil<3.0dev,>=2.7.2
+Requires-Dist: requests<3.0.0dev,>=2.21.0
+Requires-Dist: pyarrow<15,>=10.0.1
+Requires-Dist: numpy<2
+Requires-Dist: sqlalchemy>=1.4
+Requires-Dist: pandas>=1.5.3
+Requires-Dist: urllib3==1.26.19
+Requires-Dist: future
+Requires-Dist: python-dateutil
+Requires-Dist: importlib-metadata; python_version < "3.8"
+Provides-Extra: dev
+Requires-Dist: pytest==8.2.1; extra == "dev"
+Requires-Dist: sqlparse; extra == "dev"
+Requires-Dist: grpcio; extra == "dev"
+Requires-Dist: grpcio-tools; extra == "dev"
+Requires-Dist: build; extra == "dev"
+Requires-Dist: pytest-xdist; extra == "dev"
+Requires-Dist: pytz; extra == "dev"
+Requires-Dist: twine; extra == "dev"
+Requires-Dist: setuptools; extra == "dev"
+Requires-Dist: setuptools-scm; extra == "dev"
+Requires-Dist: tomli; extra == "dev"
+Requires-Dist: build; extra == "dev"
+Dynamic: license-file

@@ -21,6 +21,15 @@ VectorDBBench is sponsered by Zilliz，the leading opensource vectorDB company b
 ``` shell
 python >= 3.11
 ```
+
+conda create -n VectorDBBench python=3.11
+conda activate VectorDBBench
+conda deactivate
+conda remove -n VectorDBBench --all
+
+python3.11 -m venv VectorDBBenchEnv
+source VectorDBBenchEnv/bin/activate
+
 ### Install
 **Install vectordb-bench with only PyMilvus**
 ```shell
@@ -57,6 +66,7 @@ All the database client supported
 | mongodb                  | `pip install vectordb-bench[mongodb]`       |
 | tidb                     | `pip install vectordb-bench[tidb]`          |
 | vespa                    | `pip install vectordb-bench[vespa]`         |
+| clickzettalakehouse      | `pip install vectordb-bench[clickzettalakehouse]`         |
 
 ### Run
 

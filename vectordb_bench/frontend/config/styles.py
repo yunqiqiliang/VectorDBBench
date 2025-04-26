@@ -49,6 +49,7 @@ DB_TO_ICON = {
     DB.AWSOpenSearch: "https://assets.zilliz.com/opensearch_1eee37584e.jpeg",
     DB.TiDB: "https://img2.pingcap.com/forms/3/d/3d7fd5f9767323d6f037795704211ac44b4923d6.png",
     DB.Vespa: "https://vespa.ai/vespa-content/uploads/2025/01/Vespa-symbol-green-rgb.png.webp",
+    DB.ClickZettaLakehouse: "https://netmarket.oss-cn-hangzhou.aliyuncs.com/product/c74478209ba0444ebfd1a609ce2b35f5.png",
 }
 
 # RedisCloud color: #0D6EFD
@@ -65,4 +66,5 @@ COLOR_MAP = {
     DB.AWSOpenSearch.value: "#0DCAF0",
     DB.TiDB.value: "#0D6EFD",
     DB.Vespa.value: "#61d790",
+    DB.ClickZettaLakehouse.value: "#0D6EFD",
 }

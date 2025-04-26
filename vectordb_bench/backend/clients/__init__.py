@@ -21,7 +21,7 @@ class DB(Enum):
         >>> DB.Milvus.name
         "Milvus"
     """
-
+    ClickZettaLakehouse = "ClickZettaLakehouse"
     Milvus = "Milvus"
     ZillizCloud = "ZillizCloud"
     Pinecone = "Pinecone"
@@ -45,6 +45,7 @@ class DB(Enum):
     TiDB = "TiDB"
     Clickhouse = "Clickhouse"
     Vespa = "Vespa"
+    
 
     @property
     def init_cls(self) -> type[VectorDB]:  # noqa: PLR0911, PLR0912, C901
@@ -163,6 +164,10 @@ class DB(Enum):
             from .vespa.vespa import Vespa
 
             return Vespa
+        if self == DB.ClickZettaLakehouse:
+            from .clickzettalakehouse.clickzettalakehouse import ClickZettaLakehouse
+
+            return ClickZettaLakehouse
 
         msg = f"Unknown DB: {self.name}"
         raise ValueError(msg)
@@ -284,6 +289,10 @@ class DB(Enum):
             from .vespa.config import VespaConfig
 
             return VespaConfig
+        if self == DB.ClickZettaLakehouse:
+            from .clickzettalakehouse.config import ClickZettaLakehouseConfig
+
+            return ClickZettaLakehouseConfig
 
         msg = f"Unknown DB: {self.name}"
         raise ValueError(msg)
@@ -381,6 +390,10 @@ class DB(Enum):
             from .vespa.config import VespaHNSWConfig
 
             return VespaHNSWConfig
+        if self == DB.ClickZettaLakehouse:
+            from .clickzettalakehouse.config import ClickZettaLakehouseIndexConfig
+
+            return ClickZettaLakehouseIndexConfig
 
         # DB.Pinecone, DB.Chroma, DB.Redis
         return EmptyDBCaseConfig

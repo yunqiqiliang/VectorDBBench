@@ -1,0 +1,1 @@
+from clickzetta.connector.v0.query_result import *

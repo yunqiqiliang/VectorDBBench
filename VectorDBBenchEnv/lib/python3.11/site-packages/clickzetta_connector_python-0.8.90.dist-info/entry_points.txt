@@ -1,0 +1,5 @@
+[sqlalchemy.dialects]
+clickzetta = clickzetta.connector.sqlalchemy:ClickZettaDialect
+
+[superset.db_engine_specs]
+clickzetta = clickzetta.connector.superset:ClickZettaEngineSpec

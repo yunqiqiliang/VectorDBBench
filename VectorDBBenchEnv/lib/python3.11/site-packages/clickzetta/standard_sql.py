@@ -1,0 +1,1 @@
+from clickzetta.connector.v0.standard_sql import *
