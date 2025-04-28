@@ -22,13 +22,16 @@ VectorDBBench is sponsered by Zilliz，the leading opensource vectorDB company b
 python >= 3.11
 ```
 
-conda create -n VectorDBBench python=3.11
-conda activate VectorDBBench
-conda deactivate
-conda remove -n VectorDBBench --all
-
+Create dedicated virtual python Env and activate it
+``` shell
 python3.11 -m venv VectorDBBenchEnv
 source VectorDBBenchEnv/bin/activate
+```
+
+While compelete test, you could deactivate python Env
+``` shell
+deactivate
+```
 
 ### Install
 **Install vectordb-bench with only PyMilvus**
@@ -41,10 +44,10 @@ pip install vectordb-bench
 ``` shell
 pip install vectordb-bench[all]
 ```
-**Install the specific database client**
+**Install the ClickZetta Lakehouse client**
 
 ```shell
-pip install vectordb-bench[pinecone]
+pip install vectordb-bench[clickzettalakehouse]
 ```
 All the database client supported
 
@@ -69,6 +72,8 @@ All the database client supported
 | clickzettalakehouse      | `pip install vectordb-bench[clickzettalakehouse]`         |
 
 ### Run
+
+For running ClickZetta Lakehouse, please ref [Build on your own](#build-on-your-own).
 
 ``` shell
 init_bench
@@ -119,7 +124,7 @@ Options:
                                   without running the tasks
   --k INTEGER                     K value for number of nearest neighbors to
                                   search  [default: 100]
-  --concurrency-duration INTEGER  Adjusts the duration in seconds of each
+  --concurrency-duration INTEGER  Adjussource VectorDBBenchEnv/bin/activate the duration in seconds of each
                                   concurrency search  [default: 30]
   --num-concurrency TEXT          Comma-separated list of concurrency values
                                   to test during concurrent search  [default:
@@ -273,17 +278,18 @@ To facilitate the presentation of test results and provide a comprehensive perfo
 ``` shell
 pip install -e '.[test]'
 
-pip install -e '.[pinecone]'
+pip install -e '.[clickzettalakehouse]'
 ```
 ### Run test server
-```
-$ python -m vectordb_bench
+
+```shell
+$ init_bench
 ```
 
 OR:
 
-```shell
-$ init_bench
+```
+$ python -m vectordb_bench
 ```
 
 OR:

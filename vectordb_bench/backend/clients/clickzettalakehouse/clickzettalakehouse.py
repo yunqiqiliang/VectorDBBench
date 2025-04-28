@@ -32,6 +32,11 @@ class ClickZettaLakehouse(VectorDB):
         """Initialize the database connection."""
         with self.get_session() as session:
             log.info("Database connection initialized.")
+            preload_table_sql = f"""
+                ALTER VCLUSTER {self.db_config.get("vcluster", "default_ap")} SET PRELOAD_TABLES='{self.table_name}';
+                SELECT COUNT(*) FROM {self.table_name};
+            """
+            session.sql(preload_table_sql).collect()
 
     def __init__(
         self,
