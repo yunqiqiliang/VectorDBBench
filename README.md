@@ -15,7 +15,10 @@ Prepare to delve into the world of VectorDBBench, and let it guide you in uncove
 
 VectorDBBench is sponsered by Zilliz，the leading opensource vectorDB company behind Milvus. Choose smarter with VectorDBBench- start your free test on [zilliz cloud](https://zilliz.com/) today!
 
+ClickZetta Lakehouse is a single engine and support in-lakehouse vector database, you could get a account to test ClickZetta Lakehouse on [yunqi.tech](https://www.yunqi.tech/open2025) .
+
 **Leaderboard:** https://zilliz.com/benchmark
+
 ## Quick Start
 ### Prerequirement
 ``` shell
