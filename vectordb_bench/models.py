@@ -101,6 +101,17 @@ class CaseConfigParamType(Enum):
     mongodb_quantization_type = "quantization"
     mongodb_num_candidates_ratio = "num_candidates_ratio"
 
+    # ClickZetta 特定类型 (使用统一的命名格式)
+    DistanceFunction = "DistanceFunction"
+    ScalarType = "ScalarType"
+    ReuseVectorColumn = "ReuseVectorColumn"
+    CompressCodec = "CompressCodec"
+    CompressLevel = "CompressLevel"
+    CompressBlockSize = "CompressBlockSize"
+    CompressByteStreamSplit = "CompressByteStreamSplit"
+    ConversionRule = "ConversionRule"
+
+
 
 class CustomizedCase(BaseModel):
     pass

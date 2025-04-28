@@ -1491,6 +1491,154 @@ VespaLoadingConfig = [
 ]
 VespaPerformanceConfig = VespaLoadingConfig
 
+
+
+
+
+# 1. 利用已有的 M 和 EFConstruction 配置模板，添加 ClickZetta 特有参数
+CaseConfigParamInput_ClickZetta_IndexType = CaseConfigInput(
+    label=CaseConfigParamType.IndexType,
+    inputType=InputType.Option,
+    inputConfig={
+        "options": [
+            IndexType.HNSW.value,
+        ],
+    },
+)
+
+CaseConfigParamInput_ClickZetta_DistanceFunction = CaseConfigInput(
+    label=CaseConfigParamType.DistanceFunction,
+    inputType=InputType.Option,
+    inputConfig={
+        "options": [
+            "cosine_distance",
+            "l2_distance",
+            "jaccard_distance",
+            "hamming_distance",
+        ],
+        "default": "cosine_distance",
+    },
+    inputHelp="-",
+)
+
+CaseConfigParamInput_ClickZetta_ScalarType = CaseConfigInput(
+    label=CaseConfigParamType.ScalarType,
+    inputType=InputType.Option,
+    inputConfig={
+        "options": ["f32", "f16", "i8", "b1"],
+        "default": "f32",
+    },
+    inputHelp="向量索引中的向量元素类型，可与 vector column 不一致",
+)
+
+CaseConfigParamInput_ClickZetta_M = CaseConfigInput(
+    label=CaseConfigParamType.M,
+    inputType=InputType.Number,
+    inputConfig={
+        "min": 1,
+        "max": 1000,
+        "value": 16,
+    },
+    inputHelp="HNSW算法中的最大邻居数，建议不超过1000",
+)
+
+CaseConfigParamInput_ClickZetta_EFConstruction = CaseConfigInput(
+    label=CaseConfigParamType.EFConstruction,
+    inputType=InputType.Number,
+    inputConfig={
+        "min": 1,
+        "max": 5000,
+        "value": 128,
+    },
+    inputHelp="HNSW算法构建索引时的候选集大小，建议不超过5000",
+)
+
+CaseConfigParamInput_ClickZetta_ReuseVectorColumn = CaseConfigInput(
+    label=CaseConfigParamType.ReuseVectorColumn,
+    inputType=InputType.Bool,
+    inputConfig={
+        "value": False,
+    },
+    inputHelp="是否复用 vector column 的数据以节省存储空间",
+)
+
+CaseConfigParamInput_ClickZetta_CompressCodec = CaseConfigInput(
+    label=CaseConfigParamType.CompressCodec,
+    inputType=InputType.Option,
+    inputConfig={
+        "options": ["uncompressed", "zstd", "lz4"],
+        "default": "uncompressed",
+    },
+    inputHelp="向量索引的压缩算法；复用column时不生效",
+)
+
+CaseConfigParamInput_ClickZetta_CompressLevel = CaseConfigInput(
+    label=CaseConfigParamType.CompressLevel,
+    inputType=InputType.Option,
+    inputConfig={
+        "options": ["fastest", "default", "best"],
+        "default": "default",
+    },
+    inputHelp="压缩算法级别",
+)
+
+CaseConfigParamInput_ClickZetta_CompressByteStreamSplit = CaseConfigInput(
+    label=CaseConfigParamType.CompressByteStreamSplit,
+    inputType=InputType.Bool,
+    inputConfig={
+        "value": True,
+    },
+    inputHelp="压缩前重排 float bit",
+)
+
+CaseConfigParamInput_ClickZetta_CompressBlockSize = CaseConfigInput(
+    label=CaseConfigParamType.CompressBlockSize,
+    inputType=InputType.Number,
+    inputConfig={
+        "min": 1048576,  # 1MB
+        "max": 1 << 30,  # 1GB，或根据实际需求调整
+        "value": 16777216,  # 16MB
+    },
+    inputHelp="压缩块大小，需大于1MB",
+)
+
+CaseConfigParamInput_ClickZetta_ConversionRule = CaseConfigInput(
+    label=CaseConfigParamType.ConversionRule,
+    inputType=InputType.Option,
+    inputConfig={
+        "options": ["default", "as_bits"],
+        "default": "default",
+    },
+    inputHelp="需要把 vector(tinyint, N) 类型按位建索引时使用 as_bits",
+)
+
+
+# 2. 定义配置列表
+ClickZettaLakehouseLoadConfig = [
+    CaseConfigParamInput_ClickZetta_M,
+    CaseConfigParamInput_ClickZetta_EFConstruction,
+]
+
+ClickZettaLakehousePerformanceConfig = [
+    CaseConfigParamInput_ClickZetta_IndexType,
+    CaseConfigParamInput_ClickZetta_DistanceFunction,
+    CaseConfigParamInput_ClickZetta_ScalarType,
+    CaseConfigParamInput_ClickZetta_M,
+    CaseConfigParamInput_ClickZetta_EFConstruction,
+    CaseConfigParamInput_ClickZetta_ReuseVectorColumn,
+    CaseConfigParamInput_ClickZetta_CompressCodec,
+    CaseConfigParamInput_ClickZetta_CompressLevel,
+    CaseConfigParamInput_ClickZetta_CompressByteStreamSplit,
+    CaseConfigParamInput_ClickZetta_CompressBlockSize,
+    CaseConfigParamInput_ClickZetta_ConversionRule,
+]
+
+# # 3. 添加到 CASE_CONFIG_MAP
+# CASE_CONFIG_MAP[DB.ClickZettaLakehouse] = {
+#     CaseLabel.Load: ClickZettaLakehouseLoadConfig,
+#     CaseLabel.Performance: ClickZettaLakehousePerformanceConfig,
+# }
+
 CASE_CONFIG_MAP = {
     DB.Milvus: {
         CaseLabel.Load: MilvusLoadConfig,
@@ -1550,5 +1698,9 @@ CASE_CONFIG_MAP = {
     DB.Vespa: {
         CaseLabel.Load: VespaLoadingConfig,
         CaseLabel.Performance: VespaPerformanceConfig,
+    },
+    DB.ClickZettaLakehouse: {
+        CaseLabel.Load: ClickZettaLakehouseLoadConfig,
+        CaseLabel.Performance: ClickZettaLakehousePerformanceConfig,
     },
 }

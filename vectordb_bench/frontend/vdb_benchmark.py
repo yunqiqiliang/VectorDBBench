@@ -14,7 +14,8 @@ from vectordb_bench.frontend.components.get_results.saveAsImage import getResult
 
 from vectordb_bench.interface import benchmark_runner
 
-
+import logging
+logging.getLogger("streamlit.runtime.scriptrunner_utils.script_run_context").setLevel(logging.ERROR)
 def main():
     # set page config
     initResultsPageConfig(st)

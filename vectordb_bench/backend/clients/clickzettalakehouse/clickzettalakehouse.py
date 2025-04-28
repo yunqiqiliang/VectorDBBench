@@ -21,8 +21,9 @@ log.setLevel(logging.DEBUG)
 
 logging.getLogger("clickzetta").setLevel(logging.DEBUG)
 
+
 CLICKZETTA_LAKEHOUSE_MAX_SIZE_PER_BATCH = 1000 * 1024 * 1024  # 1000MB
-CLICKZETTA_LAKEHOUSE_MAX_NUM_PER_BATCH = 10000
+CLICKZETTA_LAKEHOUSE_MAX_NUM_PER_BATCH = 20000
 
 EXECUTE_SEARCH_EMBEDDING_WITH_SESSION = False
 
@@ -45,8 +46,17 @@ class ClickZettaLakehouse(VectorDB):
         self.name = "ClickZettaLakehouse"
         self.db_config = db_config
         self.case_config = db_case_config
-        self.table_name = collection_name
+        log.info(f"case_config : {self.case_config}")
+        self.table_name = self.db_config.get("table_name", collection_name)
+
         self.dim = dim
+
+        self._vector_index_name = "cz_vector_index"
+        self._id_field = "id"
+        self._vector_field = "embedding"
+        self._bf_index_name = "cz_bf_index_on"
+        self._vector_index_name = "cz_vector_idx_on"
+
         self.AUTH_EXPIRATION_TIME = auth_expiration_time
         self.batch_size = int(
             min(
@@ -54,11 +64,25 @@ class ClickZettaLakehouse(VectorDB):
                 CLICKZETTA_LAKEHOUSE_MAX_NUM_PER_BATCH,
             ),
         )
-        self.search_fn = db_case_config.search_param()["metric_fn"]
+        self.search_fn = db_case_config.search_param()["distance_function"]
         self.auth_time = None
         # 关键：hints为None时赋值为default_hints
         if not self.db_config.get("hints"):
             self.db_config["hints"] = dict(default_hints)
+
+        log.info(f"{self.name} config values: {self.db_config}\n{self.case_config}")
+        if not any(
+            (
+                self.case_config.create_index_before_load,
+                self.case_config.create_index_after_load,
+            ),
+        ):
+            msg = (
+                f"{self.name} config must create an index using create_index_before_load or create_index_after_load"
+                "\n{pprint.pformat(self.db_config)}\n{pprint.pformat(self.case_config)}"
+            )
+            log.warning(msg)
+            raise RuntimeError(msg)
         # log.info(f"self.db_config : {self.db_config }")
         # 仅主进程复用 session，子进程不复用
         self.session = None
@@ -87,7 +111,7 @@ class ClickZettaLakehouse(VectorDB):
             workspace=self.db_config.get("workspace"),
             schema=self.db_config.get("schema", "public"),
             vcluster=self.db_config.get("vcluster", "default"),
-            hints=self.db_config.get("hints", {}),
+            hints=self.db_config.get("hints", default_hints),
         )
         cursor = conn.cursor()
         yield conn, cursor
@@ -151,31 +175,120 @@ class ClickZettaLakehouse(VectorDB):
             log.warning("Failed to drop table: %s error: %s", self.table_name, e)
             raise
 
+    # def _create_table(self):
+    #     try:
+    #         index_param = self.case_config.index_param()
+    #         log.info(f"self.case_config.index_param() : {self.case_config.index_param()}")
+    #         query = f"""
+    #         CREATE TABLE {self.table_name} (
+    #             {self._id_field} BIGINT,
+    #             {self._vector_field} VECTOR({self.dim}) NOT NULL,
+    #             INDEX {self._bf_index_name}_{self.table_name} ({self._id_field}) BLOOMFILTER,
+    #             INDEX {self._vector_index_name}_{self.table_name} ({self._vector_field}) USING VECTOR PROPERTIES (
+    #                 "scalar.type" = "{index_param.get("scalar_type", "f32")}",
+    #                 "distance.function" = "{index_param.get("distance_function", "cosine_distance")}",
+    #                 "m" = "{index_param.get("m", 16)}",
+    #                 "ef.construction" = "{index_param.get("ef_construction", 128)}",
+    #                 "reuse.vector.column" = "{str(index_param.get("reuse_vector_column", False)).lower()}",
+    #                 "compress.codec" = "{index_param.get("compress_codec", "uncompressed")}",
+    #                 "compress.level" = "{index_param.get("compress_level", "default")}",
+    #                 "compress.byte.stream.split" = "{str(index_param.get("compress_byte_stream_split", True)).lower()}",
+    #                 "compress.block.size" = "{index_param.get("compress_block_size", 16777216)}",
+    #                 "conversion.rule" = "{index_param.get("conversion_rule", "default")}"
+    #             )
+    #         );
+    #         """
+    #         with self.execute_query(query) as _:
+    #             log.info(f"Table {self.table_name} created successfully.")
+    #     except Exception as e:
+    #         log.warning("Failed to create table: %s error: %s", self.table_name, e)
+    #         raise
     def _create_table(self):
         try:
             index_param = self.case_config.index_param()
-            query = f"""
-            CREATE TABLE {self.table_name} (
-                id BIGINT,
-                embedding VECTOR({self.dim}) NOT NULL,
-                INDEX idx_vector_on_{self.table_name}_embedding (embedding) USING VECTOR PROPERTIES (
-                    "scalar.type" = "f32",
-                    "distance.function" = "{index_param["metric_fn"]}"
-                )
-            );
-            """
-            with self.execute_query(query) as _:
-                log.info(f"Table {self.table_name} created successfully.")
+            log.info(f"self.case_config.index_param() : {self.case_config.index_param()}")
+            if self.case_config.create_index_before_load:
+                cteate_table_with_vector_index_query = f"""
+                CREATE TABLE {self.table_name} (
+                    {self._id_field} BIGINT,
+                    {self._vector_field} VECTOR({self.dim}) NOT NULL,
+                    INDEX {self._bf_index_name}_{self.table_name} ({self._id_field}) BLOOMFILTER,
+                    INDEX {self._vector_index_name}_{self.table_name} ({self._vector_field}) USING VECTOR PROPERTIES (
+                        "scalar.type" = "{index_param.get("scalar_type", "f32")}",
+                        "distance.function" = "{index_param.get("distance_function", "cosine_distance")}",
+                        "m" = "{index_param.get("m", 16)}",
+                        "ef.construction" = "{index_param.get("ef_construction", 128)}",
+                        "reuse.vector.column" = "{str(index_param.get("reuse_vector_column", False)).lower()}",
+                        "compress.codec" = "{index_param.get("compress_codec", "uncompressed")}",
+                        "compress.level" = "{index_param.get("compress_level", "default")}",
+                        "compress.byte.stream.split" = "{str(index_param.get("compress_byte_stream_split", True)).lower()}",
+                        "compress.block.size" = "{index_param.get("compress_block_size", 16777216)}",
+                        "conversion.rule" = "{index_param.get("conversion_rule", "default")}"
+                    )
+                );
+                """
+                with self.execute_query(cteate_table_with_vector_index_query) as _:
+                    log.info(f"Table {self.table_name} created with vector index successfully.")
+            else:
+                cteate_table_without_vector_index_query = f"""
+                CREATE TABLE {self.table_name} (
+                    {self._id_field} BIGINT,
+                    {self._vector_field} VECTOR({self.dim}) NOT NULL,
+                    INDEX {self._bf_index_name}_{self.table_name} ({self._id_field}) BLOOMFILTER,
+                );
+                """
+                with self.execute_query(cteate_table_without_vector_index_query) as _:
+                    log.info(f"Table {self.table_name} created without vector index successfully.")
         except Exception as e:
             log.warning("Failed to create table: %s error: %s", self.table_name, e)
+            raise
+    def _create_index(self):
+        try:
+            index_param = self.case_config.index_param()
+            index_name = f"{self._vector_index_name}_{self.table_name}"
+            create_index_query = f"""
+            CREATE VECTOR INDEX IF NOT EXISTS {index_name} ON TABLE {self.table_name}({self._vector_field}) PROPERTIES(
+                    "scalar.type" = "{index_param.get("scalar_type", "f32")}",
+                    "distance.function" = "{index_param.get("distance_function", "cosine_distance")}",
+                    "m" = "{index_param.get("m", 16)}",
+                    "ef.construction" = "{index_param.get("ef_construction", 128)}",
+                    "reuse.vector.column" = "{str(index_param.get("reuse_vector_column", False)).lower()}",
+                    "compress.codec" = "{index_param.get("compress_codec", "uncompressed")}",
+                    "compress.level" = "{index_param.get("compress_level", "default")}",
+                    "compress.byte.stream.split" = "{str(index_param.get("compress_byte_stream_split", True)).lower()}",
+                    "compress.block.size" = "{index_param.get("compress_block_size", 16777216)}",
+                    "conversion.rule" = "{index_param.get("conversion_rule", "default")}"
+                );
+            """
+            build_index_query = f"""
+            BUILD INDEX {index_name} ON {self.table_name};
+            """
+            with self.execute_query(create_index_query) as _:
+                log.info(f"Index {index_name} ON TABLE {self.table_name}({self._vector_field}) created successfully.")
+            with self.execute_query(build_index_query) as _:
+                log.info(f"Build {index_name} ON TABLE {self.table_name}({self._vector_field}) successfully.")
+        except Exception as e:
+            log.warning("Failed to create or build index: %s error: %s", f"({index_name} ON TABLE {self.table_name}({self._vector_field})", e)
+            raise
+        
+    def _drop_index(self):
+        try:
+            index_name = f"{self._vector_index_name}_{self.table_name}"
+            drop_index_query = f"""
+            DROP INDEX IF EXISTS {index_name};
+            """
+            with self.execute_query(drop_index_query) as _:
+                log.info(f"Index {index_name} ON TABLE {self.table_name}({self._vector_field}) dropped successfully.")
+        except Exception as e:
+            log.warning("Failed to drop index: %s error: %s", f"({index_name} ON TABLE {self.table_name}({self._vector_field})", e)
             raise
 
     def ready_to_load(self) -> bool:
         pass
 
     def optimize(self, data_size: int | None = None) -> None:
-        pass
-        log.info("Passed:Index build finished successfully.")
+        if self.case_config.create_index_after_load:
+            self._post_insert()
 
     def insert_embeddings(
         self,
@@ -225,6 +338,13 @@ class ClickZettaLakehouse(VectorDB):
         except Exception as save_error:
             log.error(f"Error loading data to table {self.table_name}: {save_error}")
             return total_inserted, save_error
+        
+    def _post_insert(self):
+        log.info(f"{self.name} post insert before optimize")
+        
+        self._drop_index()
+        log.info("Begin Index create and build.")
+        self._create_index()
 
     def search_embedding(
         self,
@@ -250,6 +370,8 @@ class ClickZettaLakehouse(VectorDB):
                 with self._get_connection() as (conn, cursor):
                     cursor.execute(sql_query)
                     result = cursor.fetchall()
+                    if len(result) != k:
+                        log.info(f"Search result length is {len(result)}, expected {k}.")
             return [int(i[0]) for i in result]
         except Exception as e:
             log.error(f"Error executing search query on table {self.table_name}: {e}")
