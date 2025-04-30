@@ -17,7 +17,7 @@ VectorDBBench is sponsered by Zilliz，the leading opensource vectorDB company b
 
 ClickZetta Lakehouse is a single engine and support in-lakehouse vector database, you could get a account to test ClickZetta Lakehouse on [yunqi.tech](https://www.yunqi.tech/open2025) .
 
-![run_test_clickzetta](fig/run_test_clickzetta.png)
+![run_test_clickzetta](fig/run_test_clickzetta.jpeg)
 
 **Leaderboard:** https://zilliz.com/benchmark
 
