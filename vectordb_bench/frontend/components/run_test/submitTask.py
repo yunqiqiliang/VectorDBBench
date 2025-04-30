@@ -36,7 +36,7 @@ def taskLabelInput(st):
 
 def advancedSettings(st):
     container = st.columns([1, 2])
-    index_already_exists = container[0].checkbox("Index already exists", value=False)
+    index_already_exists = container[0].checkbox("Index already exists", value=True)
     container[1].caption("if selected, inserting and building will be skipped.")
 
     container = st.columns([1, 2])

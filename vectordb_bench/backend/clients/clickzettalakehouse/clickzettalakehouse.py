@@ -32,11 +32,7 @@ class ClickZettaLakehouse(VectorDB):
         """Initialize the database connection."""
         with self.get_session() as session:
             log.info("Database connection initialized.")
-            preload_table_sql = f"""
-                ALTER VCLUSTER {self.db_config.get("vcluster", "default_ap")} SET PRELOAD_TABLES='{self.table_name}';
-                SELECT COUNT(*) FROM {self.table_name};
-            """
-            session.sql(preload_table_sql).collect()
+           
 
     def __init__(
         self,
@@ -94,8 +90,13 @@ class ClickZettaLakehouse(VectorDB):
         if multiprocessing.current_process().name == "MainProcess":
             try:
                 self.session = Session.builder.configs(self.db_config).create()
-                self.session.sql(f"select 'Initialize connection to the Clickzetta by VectorBenchmark Tool';")
+                self.session.sql(f"select 'Initialize connection to the Clickzetta by VectorBenchmark Tool';").collect()
                 self.auth_time = time.time()
+                preload_table_sql = f"""
+                    ALTER VCLUSTER {self.db_config.get("vcluster", "default_ap")} SET PRELOAD_TABLES='{self.table_name}';
+                    SELECT COUNT(*) FROM {self.table_name};
+                 """
+                self.session.sql(preload_table_sql).collect()
             except Exception as e:
                 raise ValueError(f"Failed to connect to Clickzetta workspace/database: {e}")
             
@@ -145,7 +146,7 @@ class ClickZettaLakehouse(VectorDB):
             session = None
             try:
                 session = Session.builder.configs(self.db_config).create()
-                session.sql(f"select 'Initialize connection to the Clickzetta by VectorBenchmark Tool';")
+                session.sql(f"select 'Initialize connection to the Clickzetta by VectorBenchmark Tool';").collect()
                 yield session
             finally:
                 if session:
@@ -363,9 +364,13 @@ class ClickZettaLakehouse(VectorDB):
         Search for the top-k nearest neighbors of the given query embedding.
         """
         try:
+            where_clause = ""
+            if filters:
+                gt = filters.get(self._id_field)
+                where_clause = f"WHERE {self._id_field} > {gt}"
             query_str = ",".join(map(str, query))
             sql_query = f"""
-            SELECT id FROM {self.table_name}
+            SELECT {self._id_field} FROM {self.table_name} {where_clause}
             ORDER BY {self.search_fn}(embedding, ARRAY[{query_str}]) LIMIT {k};
             """
             if EXECUTE_SEARCH_EMBEDDING_WITH_SESSION:

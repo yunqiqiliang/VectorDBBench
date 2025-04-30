@@ -1,0 +1,7 @@
+VectorDBBenchEnv
+vectordb_bench.egg-info
+logs
+dist
+VectorDBBench.code-workspace
+vectordb_bench/__pycache__
+vectordb_bench/results/ClickZettaLakehouse

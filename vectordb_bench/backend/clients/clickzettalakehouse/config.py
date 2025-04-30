@@ -1,8 +1,10 @@
-from ..api import DBCaseConfig, DBConfig, MetricType
+from ..api import DBCaseConfig, DBConfig,IndexType, MetricType
 
 from typing import Dict, Any, Literal
 from pydantic import BaseModel, SecretStr, Field, root_validator
 from datetime import datetime
+from typing import Sequence, Mapping, Any, Literal, TypedDict
+
 default_hints = {
         "sdk.job.timeout": 600,
         "query_tag": "VectorBench",
@@ -19,10 +21,10 @@ def default_table_name():
     return f"vector_bench_test_{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
 class ClickZettaLakehouseConfig(DBConfig):
-    user_name: str = "qiliang"
+    user_name: str = ""
     password: SecretStr
-    service: str = "ap-shanghai-tencentcloud.api.clickzetta.com"
-    instance: str = "0c3c358d"
+    service: str = "ap-beijing-tencentcloud.api.clickzetta.com"
+    instance: str = ""
     workspace: str = "quick_start"
     schema_: str = Field(default="vector_benchmark", alias="schema")
     vcluster: str = "VECTOR_BENCH"
@@ -48,9 +50,7 @@ class ClickZettaLakehouseConfig(DBConfig):
         }
 
 
-from typing import Sequence, Mapping, Any, Literal, TypedDict
-from pydantic import BaseModel
-from ..api import DBCaseConfig, IndexType, MetricType
+
 
 class ClickZettaLakehouseIndexParam(TypedDict):
     index_type: str
