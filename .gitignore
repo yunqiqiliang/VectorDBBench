@@ -12,3 +12,9 @@ venv/
 .idea/
 results/
 logs/
+/VectorDBBenchEnv
+/VectorDBBenchEnv
+/VectorDBBenchEnv
+/VectorDBBenchEnv
+/VectorDBBenchEnv
+/VectorDBBenchEnv/lib/python3.11/site-packages

@@ -1,4 +1,4 @@
-"""HTML."""  # noqa:  A005
+"""HTML."""
 import xml.etree.ElementTree as etree
 from .block import Block, type_string_in
 from ..blocks import BlocksExtension
@@ -126,7 +126,7 @@ class HTML(Block):
     NAME = 'html'
     ARGUMENT = True
     OPTIONS = {
-        'markdown': ['auto', type_string_in(VALID_MODES)]
+        'markdown': ('auto', type_string_in(VALID_MODES))
     }
 
     def __init__(self, length, tracker, md, config):

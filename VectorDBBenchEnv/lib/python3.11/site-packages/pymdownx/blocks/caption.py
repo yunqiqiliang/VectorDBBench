@@ -59,7 +59,8 @@ def update_tag(el, fig_type, fig_num, template, prepend):
                     p = children[0]
                     span = etree.Element('span', {'class': 'caption-prefix'})
                     span.text = value
-                    span.tail = (' ' + p.text) if p.text is not None else p.text
+                    empty = not bool(p.text)
+                    span.tail = (' ' + p.text) if not empty else p.text
                     p.text = None
                     p.insert(0, span)
 
@@ -82,7 +83,7 @@ class CaptionTreeprocessor(Treeprocessor):
         """Update caption IDs and prefixes."""
 
         parent_map = {c: p for p in doc.iter() for c in p}
-        last = {k: 0 for k in self.fig_types}
+        last = dict.fromkeys(self.fig_types, 0)
         counters = {k: [0] for k in self.fig_types}
         fig_type = last_type = self.type
         figs = []
@@ -201,7 +202,7 @@ class Caption(Block):
     CLASSES = ''
     ARGUMENT = None
     OPTIONS = {
-        'type': ['', type_html_identifier]
+        'type': ('', type_html_identifier)
     }
 
     def on_init(self):

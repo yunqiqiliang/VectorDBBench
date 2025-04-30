@@ -36,7 +36,7 @@ class TabbedTreeprocessor(Treeprocessor):
                 for i in list(parent):
                     if i is el and header is None:
                         break
-                    if i is last_parent:
+                    if i is last_parent and header is not None:
                         return header.attrib.get("id", '')
                     if i in headers:
                         header = i
@@ -117,8 +117,8 @@ class Tab(Block):
 
     ARGUMENT = True
     OPTIONS = {
-        'new': [False, type_boolean],
-        'select': [False, type_boolean]
+        'new': (False, type_boolean),
+        'select': (False, type_boolean)
     }
 
     def on_init(self):
