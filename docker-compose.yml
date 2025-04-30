@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  vectordb_bench:
+    image: czqiliang/vector_bench_clickzetta:latest
+    container_name: vectordb_bench
+    ports:
+      - "8506:8501"
+    volumes:
+      # 请按实际情况修改./vectordb_bench/results、/Volumes/QiliangData/vectordb_bench/dataset；也可以不使用volumes方式
+      - ./vectordb_bench/results:/opt/code/vectordb_bench/results
+      - /Volumes/QiliangData/vectordb_bench/dataset:/tmp/vectordb_bench/dataset
+    environment:
+      - PYTHONPATH=/opt/code
